@@ -10,16 +10,16 @@ mod utils;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-extern {
-    fn alert(s: &str);
-}
-
-#[wasm_bindgen]
-pub fn greet() {
-    alert("Hello, aviation-calculator-wasm!");
-}
-
-#[wasm_bindgen]
 pub fn ground_speed(course: f64, tas: f64, wd: f64, ws: f64) -> f64 {
     return calculate_ground_speed(course, tas, wd, ws);
+}
+
+#[wasm_bindgen]
+pub fn wind_correction_angle(tas: f64, ws: f64, awa: f64) -> f64 {
+    return calculate_wca(tas, ws, awa);
+}
+
+#[wasm_bindgen]
+pub fn heading(dc: f64, tas: f64, wd: f64, ws: f64) -> f64 {
+    return calculate_heading(dc, tas, wd, ws);
 }
