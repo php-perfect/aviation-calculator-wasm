@@ -1,4 +1,10 @@
-on: [ push, pull_request ]
+name: Run Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [ opened, synchronize, reopened ]
 
 jobs:
   Chrome:
@@ -15,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: browser-actions/setup-firefox@v1
-      - run: chrome --version
+      - run: firefox --version
       - name: Install
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - run: wasm-pack test --headless --firefox
