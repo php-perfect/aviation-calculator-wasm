@@ -5,26 +5,20 @@ package that can be used in JS projects.
 
 ## Usage
 
-### 🛠️ Prod Build
-
-```
-wasm-pack build --scope php-perfect
-```
-
 ### 🔬 Dev Build
 
 ```
-wasm-pack build --scope php-perfect -- --features console_error_panic_hook
+wasm-pack build --dev --scope php-perfect -- --features console_error_panic_hook
+```
+
+### 🛠️ Prod Build
+
+```
+wasm-pack build --release --scope php-perfect
 ```
 
 ### 🔬 Test in Headless Browsers
 
 ```
 wasm-pack test --headless --firefox
-```
-
-### 🎁 Publish to NPM
-
-```
-wasm-pack publish --access public
 ```
