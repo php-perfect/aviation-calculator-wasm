@@ -1,7 +1,7 @@
 [package]
 name = "aviation-calculator-wasm"
 description = "WASM bindings for the aviation calculator"
-version = "0.1.0"
+version = "0.2.2"
 authors = ["Nico Löber <nico.loeber94@gmail.com>"]
 edition = "2021"
 repository = "https://github.com/php-perfect/aviation-calculator-wasm.git"
