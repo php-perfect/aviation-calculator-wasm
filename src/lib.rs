@@ -1,6 +1,7 @@
-use aviation_calculator::fk9::{calculate_takeoff_distance, Engine as LibEngine, GrassSurface, SurfaceCondition as LibSurfaceCondition};
+use aviation_calculator::fk9::{calculate_takeoff_distance, Engine as LibEngine, GrassSurface, SurfaceCondition as LibSurfaceCondition, TakeoffCalculationError, TakeoffResult};
 use aviation_calculator::meteorology::*;
 use aviation_calculator::utils::*;
+use serde_json::json;
 use wasm_bindgen::prelude::*;
 
 mod utils;
@@ -64,12 +65,43 @@ pub fn fk9_takeoff_distance(engine: Engine, mass: f64, pressure_altitude: f64, t
         None
     };
 
-    let (takeoff_run, to_50_ft_height): (f64, f64) = calculate_takeoff_distance(engine.into(), mass, pressure_altitude, temperature, slope, gras_surface, surface_condition.into())?;
+    let result = calculate_takeoff_distance(engine.into(), mass, pressure_altitude, temperature, slope, gras_surface, surface_condition.into());
+
+    if result.is_err() {
+        return Err(convert_error(result));
+    }
+
+    let (takeoff_run, to_50_ft_height): (f64, f64) = result.unwrap();
 
     Ok(TakeoffDistances {
         takeoff_run,
         to_50_ft_height,
     })
+}
+
+fn convert_error(result: TakeoffResult) -> JsError {
+    let error: TakeoffCalculationError = result.unwrap_err();
+    let (input, kind, message, value, threshold): (String, String, String, f64, f64) = match error {
+        TakeoffCalculationError::MassTooLow { min, mass } => ("mass".to_string(), "MassTooLow".to_string(), error.to_string(), mass, min),
+        TakeoffCalculationError::MassTooHigh { max, mass } => ("mass".to_string(), "MassTooHigh".to_string(), error.to_string(), mass, max),
+        TakeoffCalculationError::InvalidPressureAltitude { source } => match source {
+            UndefinedPressureAltitudeError::AboveMaximum { max, pressure_altitude } => ("pressure_altitude".to_string(), "PressureAltitudeAboveMaximum".to_string(), source.to_string(), pressure_altitude, max),
+            UndefinedPressureAltitudeError::BelowMinimum { min, pressure_altitude } => ("pressure_altitude".to_string(), "PressureAltitudeBelowMinimum".to_string(), source.to_string(), pressure_altitude, min),
+        },
+        TakeoffCalculationError::TemperatureTooLow { min, temperature } => ("temperature".to_string(), "TemperatureTooLow".to_string(), error.to_string(), temperature, min),
+        TakeoffCalculationError::TemperatureTooHigh { max, temperature } => ("temperature".to_string(), "TemperatureTooHigh".to_string(), error.to_string(), temperature, max),
+        TakeoffCalculationError::SlopeTooSteep { max, slope } => ("slope".to_string(), "SlopeTooSteep".to_string(), error.to_string(), slope, max),
+    };
+
+    let json = json!({
+        "input": input,
+        "kind": kind,
+        "message": message,
+        "value": value,
+        "threshold": threshold,
+    });
+
+    JsError::new(&json.to_string())
 }
 
 #[wasm_bindgen]
